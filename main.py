@@ -5,11 +5,14 @@ import plotly.express as px
 
 def get_data():
     url = "https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/patients_total.csv"
-    df = pd.read_csv(url, encoding="latin1")
-    df = df.drop_duplicates("Date")
-    df['Date'] = pd.to_datetime(df['Date'])
-    # df = df.dropna() # ?
+    df = pd.read_csv(url, parse_dates=['Date']).drop_duplicates('Date')
+    df['Date'] = pd.DatetimeIndex(df['Date']).floor('H') + pd.Timedelta(minutes=46) # set all to 46min
+    # create df with timestamps for every hour
+    date_range = pd.date_range(start=df['Date'].min(), end=df['Date'].max(), freq='H')
+    df_range = pd.DataFrame({'Date': date_range})
+    df = pd.merge(df_range, df, on='Date', how='outer')
     return df
+
 
 df = get_data()
 hospitals = list(df.columns[1::])
@@ -22,15 +25,14 @@ selected = st.selectbox("Select ER", hospitals)
 df = df.filter(items=['Date', selected])
 
 
-
-# create plot
-#figure = px.line(x=dates, y=temperatures, labels={"x": "Date", "y": "Temperature (in C)"})
-#st.plotly_chart(figure)
-
-fig = px.line(df, x='Date', y=selected, title=selected,
-              labels={"x": "Time", "y": "Patients Total"})
-fig.update_layout(xaxis=dict(tickformat='%d-%m\n%hh'))
+# plot
+fig = px.line(df, x='Date', y=selected, title=selected)
+fig.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
 st.plotly_chart(fig)
 
-#fig.show()
+# scatter
+fig1 = px.scatter(df, x='Date', y=selected,  title=selected, opacity=0.7)
+fig1.update_traces(marker=dict(size=3, line=dict(width=1)))
+fig1.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
+st.plotly_chart(fig1)
 
