@@ -12,3 +12,8 @@ def load_data(url):
     # merge with df
     df = pd.merge(df_range, df, on='Date', how='outer')
     return df
+
+def filter_data(df, selected, variable_name):
+  df = df.filter(items=['Date', selected])
+  df.rename(columns={selected: variable_name}, inplace=True)
+  return df
