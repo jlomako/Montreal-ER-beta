@@ -41,7 +41,7 @@ with tab1:
                   template="plotly_white")
     fig.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
     fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
     st.write(selected)
@@ -52,7 +52,7 @@ with tab2:
                            template="plotly_white")
     fig_occupany.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
     fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    st.plotly_chart(fig_occupany)
+    st.plotly_chart(fig_occupany, use_container_width=True)
 
 st.write("Data source: Ministère de la Santé et des Services sociaux du Québec<br>"
          "© Copyright 2023, <a href='https://github.com/jlomako'>jlomako</a>", unsafe_allow_html=True)
