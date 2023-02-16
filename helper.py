@@ -1,6 +1,9 @@
 import pandas as pd
-def get_data():
-    url = "https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/patients_total.csv"
+import streamlit as st
+
+@st.cache_data
+def load_data(url):
+#    url = "https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/patients_total.csv"
     df = pd.read_csv(url, parse_dates=['Date']).drop_duplicates('Date')
     df['Date'] = pd.DatetimeIndex(df['Date']).floor('H') + pd.Timedelta(minutes=46) # set all to 46min
     # create df_range with timestamps for every hour
