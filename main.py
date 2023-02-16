@@ -25,10 +25,10 @@ df = df_occupancy.set_index("Date").join([df_waiting.set_index("Date"), df_total
 df = df.reset_index().sort_values("Date").reset_index(drop=True)
 
 
-st.write(f"Occupancy Rate: {int(df['occupancy'].max())} %<br>"
-         f"{int(df['patients_waiting'].max())} Patients waiting to be seen <br>"
-         f"{int(df['patients_total'].max())} Patients present in ER <br>"
-         f"last update: <b>{df['Date'].max()}</b>",unsafe_allow_html=True)
+st.write(f"&emsp;Occupancy Rate: {int(df['occupancy'].max())} %<br>"
+         f"&emsp;{int(df['patients_waiting'].max())} Patients waiting to be seen <br>"
+         f"&emsp;{int(df['patients_total'].max())} Patients present in ER <br>"
+         f"&emsp;last update: <b>{df['Date'].max()}</b>",unsafe_allow_html=True)
 
 
 # plot patient counts
