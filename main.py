@@ -10,7 +10,6 @@ df_current = load_current_data()
 
 st.title("Occupancy and Patient Counts in Montreal ERs")
 
-
 option = st.radio("", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
 if option == "Occupancy Rate":
     bar_selection = "occupancy"
@@ -29,6 +28,8 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                  title=bar_title,
                  hover_data=["patients_waiting", "occupancy", "patients_total"],
                  height=500)
+fig_bar.layout.xaxis.fixedrange = True
+fig_bar.layout.yaxis.fixedrange = True
 fig_bar.update_xaxes(title="")
 fig_bar.update_yaxes(title="")
 st.plotly_chart(fig_bar, use_container_width=True)
@@ -37,7 +38,7 @@ st.plotly_chart(fig_bar, use_container_width=True)
 # get update time and hospital names from df_current
 hospitals = list(df_current['hospital_name'])
 st.subheader("Select a hospital for more information")
-selected = st.selectbox("",hospitals)
+selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
 st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
          f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0]} Patients waiting to be seen <br>"
@@ -72,6 +73,8 @@ with tab1:
                   template="plotly_white")
     fig_patients.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
     fig_patients.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    fig_patients.layout.xaxis.fixedrange = True
+    fig_patients.layout.yaxis.fixedrange = True
     st.plotly_chart(fig_patients, use_container_width=True)
     # st.line_chart(df, x="Date", y=["patients_waiting", "patients_total"], use_container_width=True)
 
@@ -84,6 +87,8 @@ with tab2:
                            template="plotly_white")
     fig_occupany.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
     fig_occupany.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    fig_occupany.layout.xaxis.fixedrange = True
+    fig_occupany.layout.yaxis.fixedrange = True
     st.plotly_chart(fig_occupany, use_container_width=True)
     # st.line_chart(df, x="Date", y="occupancy")
 
