@@ -16,7 +16,7 @@ selected = st.selectbox("Select hospital:", hospitals)
 st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
          f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0]} Patients waiting to be seen <br>"
          f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0]} Patients total present in ER <br>"
-         f"&emsp;&emsp;Occupancy rate: {int(df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0])} %<br>"
+         f"&emsp;&emsp;Occupancy rate: {df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0]} %<br>"
          f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0]} of "
          f"{df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0]} Stretchers occupied ",
          unsafe_allow_html=True)

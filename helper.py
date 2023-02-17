@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import pandas as pd
-import numpy as np
 import streamlit as st
 
 nr_of_days = 5
@@ -8,9 +7,11 @@ nr_of_days = 5
 url = "https://github.com/jlomako/quebec-emergency-rooms/raw/main/data/urgence_time.csv"
 data_current = pd.read_csv(url, encoding='iso-8859-1', parse_dates=[' Mise_a_jour'])
 
+
+
 def load_current_data():
     df = data_current[data_current['RSS'] == 6].iloc[:, [-1, 3, 5, 6, 9, 10]] # get columns where RSS is 6
-    df.iloc[:, 2:] = df.iloc[:, 2:].applymap(lambda x: np.nan if isinstance(x, str) else x)
+    df.iloc[:, 2:] = df.iloc[:, 2:].apply(lambda x: pd.to_numeric(x, errors='coerce'))
     df['occupancy'] = (
                 100 * df['Nombre_de_civieres_occupees'] / df['Nombre_de_civieres_fonctionnelles \t\t\t\t\t\t']).round(0)
     df.iloc[0, 1] = 'TOTAL MONTRÉAL'
@@ -34,3 +35,6 @@ def filter_data(df, selected, variable_name):
   df = df.filter(items=['Date', selected])
   df.rename(columns={selected: variable_name}, inplace=True)
   return df
+
+
+load_data.clear()
