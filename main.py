@@ -11,16 +11,24 @@ df_current = load_current_data()
 st.title("Occupancy and Patient Counts in Montreal ERs")
 
 
-option = st.radio(" ", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
-if option == "Occupany": sel = "occupancy"
-elif option == "Patients waiting": sel = "patients_waiting"
-else: sel = "patients_total"
+option = st.radio("", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
+if option == "Occupancy Rate":
+    bar_selection = "occupancy"
+    bar_title = f"Occupancy Rates on {df_current['Date'].max()}"
+elif option == "Patients waiting":
+    bar_selection = "patients_waiting"
+    bar_title = f"Patients waiting to be seen on {df_current['Date'].max()}"
+else:
+    bar_selection = "patients_total"
+    bar_title = f"Patients total waiting in ER on {df_current['Date'].max()}"
 
 
-# plot with horizontal orientation
-fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=sel),
-             x=sel, y="hospital_name", orientation='h',
-             height=500)
+# bar plot with horizontal orientation
+fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=bar_selection),
+                 x=bar_selection, y="hospital_name", orientation='h',
+                 title=bar_title,
+                 hover_data=["patients_waiting", "occupancy", "patients_total"],
+                 height=500)
 fig_bar.update_xaxes(title="")
 fig_bar.update_yaxes(title="")
 st.plotly_chart(fig_bar, use_container_width=True)
@@ -28,7 +36,8 @@ st.plotly_chart(fig_bar, use_container_width=True)
 
 # get update time and hospital names from df_current
 hospitals = list(df_current['hospital_name'])
-selected = st.selectbox("Select hospital:", hospitals)
+st.subheader("Select a hospital for more information")
+selected = st.selectbox("",hospitals)
 
 st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
          f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0]} Patients waiting to be seen <br>"

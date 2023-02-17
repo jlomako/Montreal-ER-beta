@@ -17,7 +17,7 @@ def load_current_data():
     df.columns = ['Date', 'hospital_name', 'beds_total', 'beds_occ', 'patients_total', 'patients_waiting', 'occupancy']
     return df
 
-st.cache_data
+st.cache_data(ttl=600)
 def load_data(file):
     df = pd.read_csv("https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/"+file,
                      parse_dates=['Date']).drop_duplicates('Date')
