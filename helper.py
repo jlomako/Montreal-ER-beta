@@ -7,8 +7,6 @@ nr_of_days = 5
 url = "https://github.com/jlomako/quebec-emergency-rooms/raw/main/data/urgence_time.csv"
 data_current = pd.read_csv(url, encoding='iso-8859-1', parse_dates=[' Mise_a_jour'])
 
-
-
 def load_current_data():
     df = data_current[data_current['RSS'] == 6].iloc[:, [-1, 3, 5, 6, 9, 10]] # get columns where RSS is 6
     df.iloc[:, 2:] = df.iloc[:, 2:].apply(lambda x: pd.to_numeric(x, errors='coerce'))
@@ -19,7 +17,7 @@ def load_current_data():
     df.columns = ['Date', 'hospital_name', 'beds_total', 'beds_occ', 'patients_total', 'patients_waiting', 'occupancy']
     return df
 
-@st.cache_data
+st.cache_data
 def load_data(file):
     df = pd.read_csv("https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/"+file,
                      parse_dates=['Date']).drop_duplicates('Date')

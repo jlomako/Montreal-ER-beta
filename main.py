@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+import pandas as pd
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
@@ -8,6 +9,22 @@ st.set_page_config(layout="wide")
 df_current = load_current_data()
 
 st.title("Occupancy and Patient Counts in Montreal ERs")
+
+
+option = st.radio(" ", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
+if option == "Occupany": sel = "occupancy"
+elif option == "Patients waiting": sel = "patients_waiting"
+else: sel = "patients_total"
+
+
+# plot with horizontal orientation
+fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=sel),
+             x=sel, y="hospital_name", orientation='h',
+             height=500)
+fig_bar.update_xaxes(title="")
+fig_bar.update_yaxes(title="")
+st.plotly_chart(fig_bar, use_container_width=True)
+
 
 # get update time and hospital names from df_current
 hospitals = list(df_current['hospital_name'])
@@ -40,13 +57,14 @@ tab1, tab2 = st.tabs(["Patient Counts", "Occupancy Rate"])
 with tab1:
     st.write(selected)
     # plot patient counts
-    fig = px.line(df, x="Date", y=["patients_waiting", "patients_total"],
+    fig_patients = px.line(df, x="Date", y=["patients_waiting", "patients_total"],
                   # title="PATIENT COUNTS",
                   labels={"value": "Number of patients", "variable": ""},
                   template="plotly_white")
-    fig.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
-    fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    st.plotly_chart(fig, use_container_width=True)
+    fig_patients.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
+    fig_patients.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    st.plotly_chart(fig_patients, use_container_width=True)
+    # st.line_chart(df, x="Date", y=["patients_waiting", "patients_total"], use_container_width=True)
 
 with tab2:
     st.write(selected)
@@ -56,8 +74,9 @@ with tab2:
                            labels={"value": "Occupancy Rate", "variable": ""},
                            template="plotly_white")
     fig_occupany.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
-    fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    fig_occupany.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
     st.plotly_chart(fig_occupany, use_container_width=True)
+    # st.line_chart(df, x="Date", y="occupancy")
 
 st.write("Data source: Ministère de la Santé et des Services sociaux du Québec<br>"
          "© Copyright 2023, <a href='https://github.com/jlomako'>jlomako</a>", unsafe_allow_html=True)
