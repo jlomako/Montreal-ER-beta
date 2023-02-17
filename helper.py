@@ -37,4 +37,3 @@ def filter_data(df, selected, variable_name):
   return df
 
 
-load_data.clear()
