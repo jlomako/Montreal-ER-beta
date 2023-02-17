@@ -1,19 +1,29 @@
 import streamlit as st
 import plotly.express as px
-from helper import load_data, filter_data
+from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
 st.set_page_config(layout="wide")
 
+df_current = load_current_data()
+
+st.title("Occupancy and Patient Counts in Montreal ERs")
+
+# get update time and hospital names from df_current
+hospitals = list(df_current['hospital_name'])
+selected = st.selectbox("Select hospital:", hospitals)
+
+st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
+         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0]} Patients waiting to be seen <br>"
+         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0]} Patients total present in ER <br>"
+         f"&emsp;&emsp;Occupancy rate: {int(df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0])} %<br>"
+         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0]} of "
+         f"{df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0]} Stretchers occupied ",
+         unsafe_allow_html=True)
+
 df_occupancy = load_data("occupancy.csv")
 df_waiting = load_data("patients_waiting.csv")
 df_total = load_data("patients_total.csv")
-
-st.title("Occupancy and Patient Counts")
-
-# get update time and hospital names from df_occupancy
-hospitals = list(df_occupancy.columns[1::])
-selected = st.selectbox("Select hospital:", hospitals)
 
 df_occupancy = filter_data(df_occupancy, selected, 'occupancy')
 df_waiting = filter_data(df_waiting, selected, 'patients_waiting')
@@ -24,11 +34,6 @@ df = df_occupancy.set_index("Date").join([df_waiting.set_index("Date"), df_total
 # transform index to column "Date"
 df = df.reset_index().sort_values("Date").reset_index(drop=True)
 
-
-st.write(f"&emsp;Occupancy Rate: {int(df['occupancy'].max())} %<br>"
-         f"&emsp;{int(df['patients_waiting'].max())} Patients waiting to be seen <br>"
-         f"&emsp;{int(df['patients_total'].max())} Patients present in ER <br>"
-         f"&emsp;last update: <b>{df['Date'].max()}</b>",unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["Patient Counts", "Occupancy Rate"])
 
