@@ -4,7 +4,7 @@ import pandas as pd
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 df_current = load_current_data()
 
@@ -27,8 +27,10 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                  x=bar_selection, y="hospital_name", orientation='h',
                  title=bar_title,
                  hover_data=["patients_waiting", "occupancy", "patients_total"],
+                 text_auto=True,
                  height=500)
-fig_bar.layout.xaxis.fixedrange = True
+fig_bar.update_traces(textfont_size=30, textangle=0, textposition="inside", cliponaxis=False)
+fig_bar.layout.xaxis.fixedrange = True # removes plotly zoom functions
 fig_bar.layout.yaxis.fixedrange = True
 fig_bar.update_xaxes(title="")
 fig_bar.update_yaxes(title="")
