@@ -18,7 +18,7 @@ option = st.radio("Sort by:", options.keys(), horizontal=True)
 bar_selection = options[option]["selection"]
 bar_title = options[option]["title"]
 
-
+# to do: add NA/data not available to plot
 # bar plot with horizontal orientation
 fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=bar_selection),
                  x=bar_selection, y="hospital_name",
@@ -50,11 +50,11 @@ hospitals = list(df_current.sort_values(by='occupancy', ascending=False)['hospit
 selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
 st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
-         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0]} Patients waiting to be seen <br>"
-         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0]} Patients total present in ER <br>"
+         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0])} Patients waiting to be seen <br>"
+         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0])} Patients total present in ER <br>"
          f"&emsp;&emsp;Occupancy rate: {df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0]} %<br>"
-         f"&emsp;&emsp;{df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0]} of "
-         f"{df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0]} Stretchers occupied ",
+         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0])} of "
+         f"{int(df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0])} Stretchers occupied ",
          unsafe_allow_html=True)
 
 df_occupancy = load_data("occupancy.csv")
