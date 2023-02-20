@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pandas as pd
-import streamlit as st
 
-nr_of_days = 5
+nr_of_days = 7
 
 url = "https://github.com/jlomako/quebec-emergency-rooms/raw/main/data/urgence_time.csv"
 data_current = pd.read_csv(url, encoding='iso-8859-1', parse_dates=[' Mise_a_jour'])
@@ -17,7 +16,6 @@ def load_current_data():
     df.columns = ['Date', 'hospital_name', 'beds_total', 'beds_occ', 'patients_total', 'patients_waiting', 'occupancy']
     return df
 
-#st.cache_data(ttl=600)
 def load_data(file):
     df = pd.read_csv("https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/"+file,
                      parse_dates=['Date']).drop_duplicates('Date')

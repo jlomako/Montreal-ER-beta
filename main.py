@@ -1,6 +1,5 @@
 import streamlit as st
 import plotly.express as px
-import pandas as pd
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
@@ -40,7 +39,8 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                     textangle=0,
                     textposition="inside",
                     cliponaxis=False
-                )
+                ).update_coloraxes(showscale=False  # remove legend
+                ).update_xaxes(showticklabels=False) # remove y axis label
 
 st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -76,8 +76,9 @@ def plot_data(df, x_col, y_col, label, title=None):
     fig.layout.xaxis.fixedrange = True
     fig.layout.yaxis.fixedrange = True
     fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    fig.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
+    fig.update_layout(xaxis_tickmode='auto', xaxis_dtick='1D')
     return fig
+
 
 tab1, tab2 = st.tabs(["Patient Counts", "Occupancy Rate"])
 
