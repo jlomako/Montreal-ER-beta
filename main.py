@@ -9,33 +9,39 @@ df_current = load_current_data()
 st.title("Montreal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
 
-option = st.radio("Sort by:",
-                  ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
-if option == "Occupancy Rate":
-    bar_selection = "occupancy"
-    bar_title = f"Occupancy Rates on {df_current['Date'].max()}"
-elif option == "Patients waiting":
-    bar_selection = "patients_waiting"
-    bar_title = f"Patients waiting to be seen on {df_current['Date'].max()}"
-else:
-    bar_selection = "patients_total"
-    bar_title = f"Total Number of Patients waiting in ER on {df_current['Date'].max()}"
+options = {
+    "Occupancy Rate": {"selection": "occupancy", "title": f"Occupancy Rates on {df_current['Date'].max()}"},
+    "Patients waiting": {"selection": "patients_waiting", "title": f"Patients waiting to be seen on {df_current['Date'].max()}"},
+    "Patients total": {"selection": "patients_total", "title": f"Total Number of Patients waiting in ER on {df_current['Date'].max()}"},
+}
+
+option = st.radio("Sort by:", options.keys(), horizontal=True)
+bar_selection = options[option]["selection"]
+bar_title = options[option]["title"]
+
 
 # bar plot with horizontal orientation
 fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=bar_selection),
                  x=bar_selection, y="hospital_name",
-                 orientation='h',
+                 orientation='h', # horizontal
+                 text_auto=True, # show numbers
+                 height=700,
                  title=bar_title,
                  hover_data=[bar_selection],
-                 text_auto=True,
-                 height=700,
                  color=bar_selection,
-                 color_continuous_scale="reds")
-fig_bar.layout.xaxis.fixedrange = True # removes plotly zoom functions
-fig_bar.layout.yaxis.fixedrange = True
-fig_bar.update_xaxes(title="")
-fig_bar.update_yaxes(title="")
-fig_bar.update_traces(textfont_size=12, textangle=0, textposition="inside", cliponaxis=False)
+                 color_continuous_scale="blues"
+                ).update_layout(
+                    xaxis_title="",
+                    yaxis_title="",
+                    xaxis_fixedrange=True, # switch of zoom functions etc
+                    yaxis_fixedrange=True
+                ).update_traces(
+                    textfont_size=12,
+                    textangle=0,
+                    textposition="inside",
+                    cliponaxis=False
+                )
+
 st.plotly_chart(fig_bar, use_container_width=True)
 
 # get update time and hospital names from df_current
