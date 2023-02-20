@@ -3,7 +3,7 @@ import plotly.express as px
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
-df_current = load_current_data("https://github.com/jlomako/quebec-emergency-rooms/raw/main/data/urgence_time.csv")
+df_current = load_current_data()
 
 st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
