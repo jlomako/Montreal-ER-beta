@@ -10,7 +10,7 @@ df_current = load_current_data()
 
 st.title("Occupancy and Patient Counts in Montreal ERs")
 
-option = st.radio("", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
+option = st.radio("Sort by: ", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
 if option == "Occupancy Rate":
     bar_selection = "occupancy"
     bar_title = f"Occupancy Rates on {df_current['Date'].max()}"
@@ -19,23 +19,24 @@ elif option == "Patients waiting":
     bar_title = f"Patients waiting to be seen on {df_current['Date'].max()}"
 else:
     bar_selection = "patients_total"
-    bar_title = f"Patients total waiting in ER on {df_current['Date'].max()}"
-
+    bar_title = f"Total Number of Patients waiting in ER on {df_current['Date'].max()}"
 
 # bar plot with horizontal orientation
 fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=bar_selection),
-                 x=bar_selection, y="hospital_name", orientation='h',
+                 x=bar_selection, y="hospital_name",
+                 orientation='h',
                  title=bar_title,
-                 hover_data=["patients_waiting", "occupancy", "patients_total"],
+                 hover_data=[bar_selection],
                  text_auto=True,
-                 height=500)
-fig_bar.update_traces(textfont_size=30, textangle=0, textposition="inside", cliponaxis=False)
+                 height=700,
+                 color=bar_selection,
+                 color_continuous_scale="reds")
 fig_bar.layout.xaxis.fixedrange = True # removes plotly zoom functions
 fig_bar.layout.yaxis.fixedrange = True
 fig_bar.update_xaxes(title="")
 fig_bar.update_yaxes(title="")
+fig_bar.update_traces(textfont_size=12, textangle=0, textposition="inside", cliponaxis=False)
 st.plotly_chart(fig_bar, use_container_width=True)
-
 
 # get update time and hospital names from df_current
 hospitals = list(df_current['hospital_name'])
