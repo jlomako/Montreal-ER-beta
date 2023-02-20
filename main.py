@@ -49,13 +49,16 @@ st.subheader("Select a hospital for more information: ")
 hospitals = list(df_current.sort_values(by='occupancy', ascending=False)['hospital_name'])
 selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
-st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
-         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0])} Patients waiting to be seen <br>"
-         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0])} Patients total present in ER <br>"
-         f"&emsp;&emsp;Occupancy rate: {df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0]} %<br>"
-         f"&emsp;&emsp;{int(df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0])} of "
-         f"{int(df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0])} Stretchers occupied ",
-         unsafe_allow_html=True)
+st.write(f"""
+         last update <b>{df_current['Date'].max()}</b>:<br>
+         Out of a total of <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0])}</b>
+         patients in the emergency room, <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0])}</b> 
+         are currently waiting to be seen by a physician.
+         The current occupancy rate is <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0])}</b> %,
+         with {int(df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0])} out of 
+         {int(df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0])} 
+         stretchers currently occupied.
+         """, unsafe_allow_html=True)
 
 df_occupancy = load_data("occupancy.csv")
 df_waiting = load_data("patients_waiting.csv")
