@@ -6,7 +6,7 @@ from helper import load_data, filter_data, load_current_data
 
 df_current = load_current_data()
 
-st.title("Montreal Emergency Room Status")
+st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
 
 options = {
@@ -71,35 +71,25 @@ df = df_occupancy.set_index("Date").join([df_waiting.set_index("Date"), df_total
 df = df.reset_index().sort_values("Date").reset_index(drop=True)
 
 
+def plot_data(df, x_col, y_col, label, title=None):
+    fig = px.line(df, x=x_col, y=y_col, labels={"value": label, "variable": ""}, title=title)
+    fig.layout.xaxis.fixedrange = True
+    fig.layout.yaxis.fixedrange = True
+    fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    fig.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
+    return fig
+
 tab1, tab2 = st.tabs(["Patient Counts", "Occupancy Rate"])
 
 with tab1:
     st.write(selected)
-    # plot patient counts
-    fig_patients = px.line(df, x="Date", y=["patients_waiting", "patients_total"],
-                  # title="PATIENT COUNTS",
-                  labels={"value": "Number of patients", "variable": ""},
-                  template="plotly_white")
-    fig_patients.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
-    fig_patients.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    fig_patients.layout.xaxis.fixedrange = True
-    fig_patients.layout.yaxis.fixedrange = True
+    fig_patients = plot_data(df, "Date", ["patients_waiting", "patients_total"], "Number of Patients")
     st.plotly_chart(fig_patients, use_container_width=True)
-    # st.line_chart(df, x="Date", y=["patients_waiting", "patients_total"], use_container_width=True)
-
 with tab2:
     st.write(selected)
-    # plot occupancy
-    fig_occupany = px.line(df, x='Date', y='occupancy',
-                           # title="OCCUPANCY RATE",
-                           labels={"value": "Occupancy Rate", "variable": ""},
-                           template="plotly_white")
-    fig_occupany.update_layout(xaxis_tickmode='linear', xaxis_dtick='1D')
-    fig_occupany.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    fig_occupany.layout.xaxis.fixedrange = True
-    fig_occupany.layout.yaxis.fixedrange = True
-    st.plotly_chart(fig_occupany, use_container_width=True)
-    # st.line_chart(df, x="Date", y="occupancy")
+    fig_occupancy = plot_data(df, "Date", ["occupancy"], "Occupancy Rate")
+    st.plotly_chart(fig_occupancy, use_container_width=True)
+
 
 st.write("Data source: Ministère de la Santé et des Services sociaux du Québec<br>"
          "© Copyright 2023, <a href='https://github.com/jlomako'>jlomako</a>", unsafe_allow_html=True)
