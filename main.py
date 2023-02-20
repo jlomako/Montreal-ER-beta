@@ -4,13 +4,13 @@ import pandas as pd
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
-# st.set_page_config(layout="wide")
-
 df_current = load_current_data()
 
-st.title("Occupancy and Patient Counts in Montreal ERs")
+st.title("Montreal Emergency Room Status")
+#st.subheader("Track emergency room capacity with real-time data updated every hour")
 
-option = st.radio("Sort by: ", ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
+option = st.radio("Sort by:",
+                  ("Occupancy Rate", "Patients waiting", "Patients total"), horizontal=True)
 if option == "Occupancy Rate":
     bar_selection = "occupancy"
     bar_title = f"Occupancy Rates on {df_current['Date'].max()}"
@@ -39,8 +39,8 @@ fig_bar.update_traces(textfont_size=12, textangle=0, textposition="inside", clip
 st.plotly_chart(fig_bar, use_container_width=True)
 
 # get update time and hospital names from df_current
-hospitals = list(df_current['hospital_name'])
-st.subheader("Select a hospital for more information")
+st.subheader("Select a hospital for more information: ")
+hospitals = list(df_current.sort_values(by='occupancy', ascending=False)['hospital_name'])
 selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
 st.write(f"last update <b>{df_current['Date'].max()}</b>:<br>"
