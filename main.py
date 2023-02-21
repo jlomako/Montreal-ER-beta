@@ -1,9 +1,10 @@
 import streamlit as st
 import plotly.express as px
+import pandas as pd
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
-df_current = load_current_data("urgence_time.csv")
+# df_current = load_current_data("urgence_time.csv")
 df_occupancy = load_data("occupancy.csv")
 df_waiting = load_data("patients_waiting.csv")
 df_total = load_data("patients_total.csv")
@@ -12,18 +13,20 @@ st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
 
 options = {
-    "Occupancy Rate": {"selection": "occupancy", "title": f"Occupancy Rates on {df_current['Date'].max()}"},
-    "Patients waiting": {"selection": "patients_waiting", "title": f"Patients waiting to be seen on {df_current['Date'].max()}"},
-    "Patients total": {"selection": "patients_total", "title": f"Total Number of Patients waiting in ER on {df_current['Date'].max()}"},
+    "Occupancy Rate": {"selection": "occupancy", "data": df_occupancy, "title": f"Occupancy Rates on {df_occupancy['Date'].max()}"},
+    "Patients waiting": {"selection": "patients_waiting", "data": df_waiting, "title": f"Patients waiting to be seen on {df_waiting['Date'].max()}"},
+    "Patients total": {"selection": "patients_total", "data": df_total, "title": f"Total Number of Patients waiting in ER on {df_total['Date'].max()}"},
 }
 
 option = st.radio("Sort by:", options.keys(), horizontal=True)
 bar_selection = options[option]["selection"]
 bar_title = options[option]["title"]
 
-# to do: add NA/data not available to plot
-# bar plot with horizontal orientation
-fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=bar_selection),
+# load selected data and reshape for plotting (does not include 'Date' and 'TOTAL MONTREAL')
+bar_data = options[option]["data"].iloc[-1, 1:22].reset_index().set_axis(['hospital_name', bar_selection], axis=1)
+bar_data[bar_selection] = pd.to_numeric(bar_data[bar_selection], errors='coerce')
+
+fig_bar = px.bar(bar_data.sort_values(by=bar_selection),
                  x=bar_selection, y="hospital_name",
                  orientation='h', # horizontal
                  text_auto=True, # show numbers
@@ -43,25 +46,15 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                     textposition="inside",
                     cliponaxis=False
                 ).update_coloraxes(showscale=False  # remove legend
-                ).update_xaxes(showticklabels=False) # remove y axis label
-
+                ).update_xaxes(showticklabels=False)
 st.plotly_chart(fig_bar, use_container_width=True)
 
-# get update time and hospital names from df_current
-st.subheader("Select a hospital for more information: ")
-hospitals = list(df_current.sort_values(by='occupancy', ascending=False)['hospital_name'])
-selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
+# SELECT HOSPITAL
 
-st.write(f"""
-         last update <b>{df_current['Date'].max()}</b>:<br>
-         Out of a total of <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_total'].values[0])}</b>
-         patients in the emergency room, <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'patients_waiting'].values[0])}</b> 
-         are currently waiting to be seen by a physician.
-         The current occupancy rate is <b>{int(df_current.loc[df_current['hospital_name'] == selected, 'occupancy'].values[0])}</b> %,
-         with {int(df_current.loc[df_current['hospital_name'] == selected, 'beds_occ'].values[0])} out of 
-         {int(df_current.loc[df_current['hospital_name'] == selected, 'beds_total'].values[0])} 
-         stretchers currently occupied.
-         """, unsafe_allow_html=True)
+# get update time and hospital names from df_occupancy
+st.subheader("Select a hospital for more information: ")
+hospitals = list(df_occupancy.columns[1::])
+selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
 
 df_occupancy = filter_data(df_occupancy, selected, 'occupancy')
@@ -73,6 +66,13 @@ df = df_occupancy.set_index("Date").join([df_waiting.set_index("Date"), df_total
 # transform index to column "Date"
 df = df.reset_index().sort_values("Date").reset_index(drop=True)
 
+st.write(f"""
+         last update <b>{df['Date'].max()}</b>:<br>
+         Out of a total of <b>{int(df.iloc[-1]['patients_total'])}</b>
+         patients in the emergency room, <b>{int(df.iloc[-1]['patients_waiting'])}</b>
+         are currently waiting to be seen by a physician.
+         The current occupancy rate is <b>{int(df.iloc[-1]['occupancy'])}</b> %.
+""", unsafe_allow_html=True)
 
 def plot_data(df, x_col, y_col, label, title=None):
     fig = px.line(df, x=x_col, y=y_col, labels={"value": label, "variable": ""}, title=title)
