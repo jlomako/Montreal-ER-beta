@@ -3,7 +3,10 @@ import plotly.express as px
 from helper import load_data, filter_data, load_current_data
 # terminal: streamlit run main.py
 
-df_current = load_current_data()
+df_current = load_current_data("urgence_time.csv")
+df_occupancy = load_data("occupancy.csv")
+df_waiting = load_data("patients_waiting.csv")
+df_total = load_data("patients_total.csv")
 
 st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
@@ -60,9 +63,6 @@ st.write(f"""
          stretchers currently occupied.
          """, unsafe_allow_html=True)
 
-df_occupancy = load_data("occupancy.csv")
-df_waiting = load_data("patients_waiting.csv")
-df_total = load_data("patients_total.csv")
 
 df_occupancy = filter_data(df_occupancy, selected, 'occupancy')
 df_waiting = filter_data(df_waiting, selected, 'patients_waiting')
