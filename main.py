@@ -7,7 +7,7 @@ from datetime import timedelta
 
 nr_of_days = 7
 
-@st.cache_data
+@st.cache_data(ttl=600) # 10min cache
 def get_data(file):
     df = pd.read_csv("https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/"+file,
                      parse_dates=['Date']).drop_duplicates('Date')
