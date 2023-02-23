@@ -7,6 +7,7 @@ from datetime import timedelta
 
 nr_of_days = 7
 
+@st.cache_data
 def get_data(file):
     df = pd.read_csv("https://github.com/jlomako/hospital-occupancy-tracker/raw/main/tables/"+file,
                      parse_dates=['Date']).drop_duplicates('Date')
@@ -56,12 +57,12 @@ st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
 
 options = {
-    "Occupancy Rate": {"selection": "occupancy", "sort": "occupancy", "title": f"Occupancy Rates on {df_occupancy['Date'].max()}"},
     "Patients waiting": {"selection": ['patients_waiting', 'patients_total'] , "sort": 'patients_waiting', "title": f"Patients waiting to be seen on {df_waiting['Date'].max()}"},
     "Patients total": {"selection": ['patients_waiting', 'patients_total'], "sort": 'patients_total', "title": f"Total Number of Patients waiting in ER on {df_total['Date'].max()}"},
+    "Occupancy Rate": {"selection": "occupancy", "sort": "occupancy", "title": f"Occupancy Rates on {df_occupancy['Date'].max()}"},
 }
 
-option = st.radio("Sort by:", options.keys(), horizontal=True)
+option = st.radio("Sort from highest to lowest by:", options.keys(), horizontal=True)
 
 # bar plot (without Total Montreal)
 fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=options[option]["sort"]),
