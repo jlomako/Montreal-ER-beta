@@ -1,51 +1,60 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from helper import load_data, filter_data, load_current_data
+from helper import get_data, get_selected
 # terminal: streamlit run main.py
 
-# df_current = load_current_data("urgence_time.csv")
-df_occupancy = load_data("occupancy.csv")
-df_waiting = load_data("patients_waiting.csv")
-df_total = load_data("patients_total.csv")
+df_occupancy = get_data("occupancy.csv")
+df_waiting = get_data("patients_waiting.csv")
+df_total = get_data("patients_total.csv")
+
+# create df with latest data
+df_current = pd.merge(df_occupancy.iloc[-1, 1:].reset_index().set_axis(['hospital_name', 'occupancy'], axis=1),
+               df_waiting.iloc[-1, 1:].reset_index().set_axis(['hospital_name', 'patients_waiting'], axis=1),
+               on='hospital_name', how='outer')
+df_current = pd.merge(df_current,
+               df_total.iloc[-1, 1:].reset_index().set_axis(['hospital_name', 'patients_total'], axis=1),
+               on='hospital_name', how='outer')
+
+# transform cols to numeric
+df_current.iloc[:, 1:] = df_current.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
+
 
 st.title("Montréal Emergency Room Status")
 #st.subheader("Track emergency room capacity with real-time data updated every hour")
 
 options = {
-    "Occupancy Rate": {"selection": "occupancy", "data": df_occupancy, "title": f"Occupancy Rates on {df_occupancy['Date'].max()}"},
-    "Patients waiting": {"selection": "patients_waiting", "data": df_waiting, "title": f"Patients waiting to be seen on {df_waiting['Date'].max()}"},
-    "Patients total": {"selection": "patients_total", "data": df_total, "title": f"Total Number of Patients waiting in ER on {df_total['Date'].max()}"},
+    "Occupancy Rate": {"selection": "occupancy", "sort": "occupancy", "title": f"Occupancy Rates on {df_occupancy['Date'].max()}"},
+    "Patients waiting": {"selection": ['patients_waiting', 'patients_total'] , "sort": 'patients_waiting', "title": f"Patients waiting to be seen on {df_waiting['Date'].max()}"},
+    "Patients total": {"selection": ['patients_waiting', 'patients_total'], "sort": 'patients_total', "title": f"Total Number of Patients waiting in ER on {df_total['Date'].max()}"},
 }
 
 option = st.radio("Sort by:", options.keys(), horizontal=True)
-bar_selection = options[option]["selection"]
-bar_title = options[option]["title"]
 
-# load selected data and reshape for plotting (does not include 'Date' and 'TOTAL MONTREAL')
-bar_data = options[option]["data"].iloc[-1, 1:22].reset_index().set_axis(['hospital_name', bar_selection], axis=1)
-bar_data[bar_selection] = pd.to_numeric(bar_data[bar_selection], errors='coerce')
-
-fig_bar = px.bar(bar_data.sort_values(by=bar_selection),
-                 x=bar_selection, y="hospital_name",
+# bar plot (without Total Montreal)
+fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].sort_values(by=options[option]["sort"]),
+                 x=options[option]["selection"], y="hospital_name",
+                 title=options[option]["title"],
                  orientation='h', # horizontal
                  text_auto=True, # show numbers
                  height=700,
-                 title=bar_title,
-                 hover_data=[bar_selection],
-                 color=bar_selection,
-                 color_continuous_scale="blues"
+                 #hover_data=options[option]["selection"],
+                 barmode='overlay' if options[option]["sort"] != "occupancy" else None,
+                 color_discrete_sequence=['#023858', '#2c7fb8'] if options[option]["sort"] != "occupancy" else None,
+                 color=options[option]["sort"] if options[option]["sort"] == "occupancy" else None,
+                 color_continuous_scale="blues" if options[option]["sort"] == "occupancy" else None,
                 ).update_layout(
                     xaxis_title="",
                     yaxis_title="",
-                    xaxis_fixedrange=True, # switch of zoom functions etc
-                    yaxis_fixedrange=True
+                    xaxis_fixedrange=True, # switch off annoying zoom functions
+                    yaxis_fixedrange=True,
+                    bargap=0.1 # gap between bars
                 ).update_traces(
-                    textfont_size=12,
+                    #textfont_size=12,
                     textangle=0,
                     textposition="inside",
                     cliponaxis=False
-                ).update_coloraxes(showscale=False  # remove legend
+                ).update_coloraxes(showscale=False  # remove legend for color_continuous_scale
                 ).update_xaxes(showticklabels=False)
 st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -56,15 +65,13 @@ st.subheader("Select a hospital for more information: ")
 hospitals = list(df_occupancy.columns[1::])
 selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
-
-df_occupancy = filter_data(df_occupancy, selected, 'occupancy')
-df_waiting = filter_data(df_waiting, selected, 'patients_waiting')
-df_total = filter_data(df_total, selected, 'patients_total')
-
 # create df with occupancy, patients_waiting and patients_total for selected hospital
-df = df_occupancy.set_index("Date").join([df_waiting.set_index("Date"), df_total.set_index("Date")], how='outer')
-# transform index to column "Date"
-df = df.reset_index().sort_values("Date").reset_index(drop=True)
+df1 = get_selected(df_occupancy, selected, "occupancy")
+df2 = get_selected(df_waiting, selected, "patients_waiting")
+df3 = get_selected(df_total, selected, "patients_total")
+
+df = pd.merge(df1, df2, on='Date', how='outer')
+df = pd.merge(df, df3, on='Date', how='outer')
 
 st.write(f"""
          last update <b>{df['Date'].max()}</b>:<br>
