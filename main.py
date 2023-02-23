@@ -25,10 +25,20 @@ def get_selected(df, selected, variable):
     # df.rename(columns={selected: variable}, inplace=True)
     return df
 
+def plot_data(df, x_col, y_col, label, title=None):
+    fig = px.line(df, x=x_col, y=y_col, labels={"value": label, "variable": ""}, title=title)
+    fig.layout.xaxis.fixedrange = True
+    fig.layout.yaxis.fixedrange = True
+    fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
+    fig.update_layout(xaxis_tickmode='auto', xaxis_dtick='1D')
+    return fig
 
+# load data
 df_occupancy = get_data("occupancy.csv")
 df_waiting = get_data("patients_waiting.csv")
 df_total = get_data("patients_total.csv")
+
+# SHOW CURRENT DATA
 
 # create df with latest data
 df_current = pd.merge(df_occupancy.iloc[-1, 1:].reset_index().set_axis(['hospital_name', 'occupancy'], axis=1),
@@ -72,7 +82,7 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                     yaxis_fixedrange=True,
                     bargap=0.1 # gap between bars
                 ).update_traces(
-                    #textfont_size=12,
+                    textfont_size=12,
                     textangle=0,
                     textposition="inside",
                     cliponaxis=False
@@ -88,12 +98,8 @@ hospitals = list(df_occupancy.columns[1::])
 selected = st.selectbox("Select a hospital", hospitals, label_visibility="hidden")
 
 # create df with occupancy, patients_waiting and patients_total for selected hospital
-df1 = get_selected(df_occupancy, selected, "occupancy")
-df2 = get_selected(df_waiting, selected, "patients_waiting")
-df3 = get_selected(df_total, selected, "patients_total")
-
-df = pd.merge(df1, df2, on='Date', how='outer')
-df = pd.merge(df, df3, on='Date', how='outer')
+df = pd.merge(get_selected(df_occupancy, selected, "occupancy"), get_selected(df_waiting, selected, "patients_waiting"), on='Date', how='outer')
+df = pd.merge(df, get_selected(df_total, selected, "patients_total"), on='Date', how='outer')
 
 st.write(f"""
          last update <b>{df['Date'].max()}</b>:<br>
@@ -102,14 +108,6 @@ st.write(f"""
          are currently waiting to be seen by a physician.
          The current occupancy rate is <b>{int(df.iloc[-1]['occupancy'])}</b> %.
 """, unsafe_allow_html=True)
-
-def plot_data(df, x_col, y_col, label, title=None):
-    fig = px.line(df, x=x_col, y=y_col, labels={"value": label, "variable": ""}, title=title)
-    fig.layout.xaxis.fixedrange = True
-    fig.layout.yaxis.fixedrange = True
-    fig.update_layout(legend=dict(orientation="h", x=1, y=1, xanchor="right", yanchor="bottom"))
-    fig.update_layout(xaxis_tickmode='auto', xaxis_dtick='1D')
-    return fig
 
 
 tab1, tab2 = st.tabs(["Patient Counts", "Occupancy Rate"])
