@@ -2,7 +2,6 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from datetime import timedelta
-# from helper import get_data, get_selected
 # terminal: streamlit run main.py
 
 nr_of_days = 7
@@ -91,7 +90,7 @@ fig_bar = px.bar(df_current[df_current['hospital_name'] != 'TOTAL MONTRÉAL'].so
                 ).update_traces(
                     textfont_size=12,
                     textangle=0,
-                    textposition="inside",
+                    textposition="auto",
                     cliponaxis=False
                 ).update_coloraxes(showscale=False  # remove legend for color_continuous_scale
                 ).update_xaxes(showticklabels=False)
